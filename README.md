@@ -1,5 +1,47 @@
 # Lead Automation – Google Apps Script
 
+> **Built for:** Interview Demo · Domain 1: Lead Automation  
+> **Stack:** Google Apps Script · Google Forms · Google Sheets · Gmail · Gemini AI  
+> **Size:** 1 file · ~120 lines · Zero external dependencies
+
+---
+
+## What It Does
+
+Most businesses lose leads simply by responding too slowly. Studies show leads contacted within **5 minutes** are **9× more likely to convert** than those followed up after 30 minutes. Manual replies at that speed are impossible for a small team.
+
+This project solves that with a fully automated pipeline:
+
+```
+Lead fills Google Form
+        │
+        ▼
+Apps Script trigger fires instantly
+        │
+        ├── Gemini AI writes a warm, personalised email (< 10 seconds)
+        │       └── References the lead's specific service, message & budget
+        │
+        ├── Gmail sends the email to the lead automatically
+        │
+        └── Google Sheet logs the AI reply, status & timestamp
+```
+
+**Result:** Every new lead gets a personalised, on-brand reply in under 10 seconds — at zero marginal cost per lead.
+
+---
+
+## Features
+
+- 📋 **Google Form** — 5-field lead capture form (Name, Email, Service, Budget, Message), created programmatically
+- 🤖 **Gemini AI** (`gemini-3.5-flash`) — generates a unique, personalised email for each lead referencing their specific enquiry
+- 📧 **Auto email** — sent via Gmail the moment the form is submitted
+- 📊 **Google Sheet logging** — every lead logged with AI reply, `Email sent` status, and timestamp
+- 🛡️ **Error-safe** — `try/catch` on every step; failures written to the Sheet so no lead is ever silently lost
+- 🔑 **Secure** — API key stored in Script Properties, never in code
+- 🧪 **`testRun()` function** — demo without filling the form
+
+---
+
 A single-file Apps Script project that:
 - Presents a **Google Form** to capture leads
 - Calls the **Gemini API** to generate a personalised reply
