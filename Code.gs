@@ -58,34 +58,46 @@ function setup() {
 // Fires automatically on every form submission. Sends a personalised email
 // and writes the AI reply + status back into the spreadsheet row.
 function onFormSubmit(e) {
-  // Pull named values from the form event
-  var values  = e.namedValues;
-  var name    = (values["Name"]                  || [""])[0].trim();
-  var email   = (values["Email"]                 || [""])[0].trim();
-  var service = (values["Service interested in"] || [""])[0].trim();
-  var budget  = (values["Budget"]                || ["(not provided)"])[0].trim();
-  var message = (values["Message"]               || [""])[0].trim();
-
-  // Locate the response sheet attached to this form
-  var formId  = e.source.getId();
-  var form    = FormApp.openById(formId);
-  var ssId    = form.getDestinationId();
-  var sheet   = SpreadsheetApp.openById(ssId).getSheets()[0];
-
-  // Find the row that belongs to this submission (last row with data)
-  var lastRow = sheet.getLastRow();
-
-  // Identify our custom columns by their header names
-  var headers     = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  var aiCol       = headers.indexOf("AI Response") + 1;
-  var statusCol   = headers.indexOf("Status")      + 1;
-  var sentAtCol   = headers.indexOf("Sent At")     + 1;
+  var name = "", email = "", service = "", budget = "(not provided)", message = "";
 
   try {
-    // Generate a personalised reply via Gemini
+    // 1. Extract values whether from Google Form event or testRun
+    if (e && e.response) {
+      var itemResponses = e.response.getItemResponses();
+      for (var i = 0; i < itemResponses.length; i++) {
+        var title = itemResponses[i].getItem().getTitle();
+        var resp = itemResponses[i].getResponse();
+        if (title === "Name") name = resp;
+        else if (title === "Email") email = resp;
+        else if (title === "Service interested in") service = resp;
+        else if (title === "Budget") budget = resp || budget;
+        else if (title === "Message") message = resp;
+      }
+    } else if (e && e.namedValues) {
+      name    = (e.namedValues["Name"]                  || [""])[0].trim();
+      email   = (e.namedValues["Email"]                 || [""])[0].trim();
+      service = (e.namedValues["Service interested in"] || [""])[0].trim();
+      budget  = (e.namedValues["Budget"]                || [budget])[0].trim();
+      message = (e.namedValues["Message"]               || [""])[0].trim();
+    }
+
+    // 2. Locate the response sheet attached to this form
+    var formId = (e && e.source && e.source.getId) ? e.source.getId() : "1IIrqZs4Kkx7ojptO0_jfdMBgIo3N2f9edWU37_3uFEU";
+    var form = FormApp.openById(formId);
+    var ssId = form.getDestinationId();
+    var sheet = SpreadsheetApp.openById(ssId).getSheets()[0];
+    var lastRow = sheet.getLastRow();
+
+    // 3. Identify our custom columns by their header names
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var aiCol = headers.indexOf("AI Response") + 1;
+    var statusCol = headers.indexOf("Status") + 1;
+    var sentAtCol = headers.indexOf("Sent At") + 1;
+
+    // 4. Generate AI reply via Gemini
     var reply = generateReply(name, service, budget, message);
 
-    // Send the email to the lead
+    // 5. Send email to the lead
     GmailApp.sendEmail(
       email,
       "Thanks for reaching out, " + name + "!",
@@ -93,15 +105,21 @@ function onFormSubmit(e) {
       { name: COMPANY_NAME }
     );
 
-    // Write results back to the sheet
-    sheet.getRange(lastRow, aiCol)     .setValue(reply);
-    sheet.getRange(lastRow, statusCol) .setValue("Email sent");
-    sheet.getRange(lastRow, sentAtCol) .setValue(new Date().toISOString());
+    // 6. Write results back to the sheet
+    if (aiCol > 0) sheet.getRange(lastRow, aiCol).setValue(reply);
+    if (statusCol > 0) sheet.getRange(lastRow, statusCol).setValue("Email sent");
+    if (sentAtCol > 0) sheet.getRange(lastRow, sentAtCol).setValue(new Date().toISOString());
 
   } catch (err) {
-    // Always surface errors in the sheet so no lead is silently lost
-    sheet.getRange(lastRow, statusCol).setValue("Error: " + err.message);
     Logger.log("onFormSubmit error: " + err.message);
+    try {
+      var formId = (e && e.source && e.source.getId) ? e.source.getId() : "1IIrqZs4Kkx7ojptO0_jfdMBgIo3N2f9edWU37_3uFEU";
+      var form = FormApp.openById(formId);
+      var sheet = SpreadsheetApp.openById(form.getDestinationId()).getSheets()[0];
+      var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      var statusCol = headers.indexOf("Status") + 1;
+      if (statusCol > 0) sheet.getRange(sheet.getLastRow(), statusCol).setValue("Error: " + err.message);
+    } catch (e2) {}
   }
 }
 
