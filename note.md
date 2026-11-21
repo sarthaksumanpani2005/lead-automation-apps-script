@@ -10,7 +10,7 @@
 | **Google Forms** | Lead capture UI — created programmatically via `FormApp` |
 | **Google Sheets** | Persistent log — linked to the form via `SpreadsheetApp` |
 | **Gmail** | Email delivery via `GmailApp.sendEmail` |
-| **Gemini API (`gemini-2.5-flash`)** | AI text generation — called via `UrlFetchApp` (REST) |
+| **Gemini API (`gemini-3.5-flash`)** | AI text generation — called via `UrlFetchApp` (REST) |
 | **Script Properties** | Secure credential storage (API key never touches the code) |
 
 No external libraries, no frameworks, no paid services required beyond a free Gemini API key.
