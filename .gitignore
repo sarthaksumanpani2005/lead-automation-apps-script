@@ -1,0 +1,11 @@
+# No secrets in the repo — API key lives in Apps Script Script Properties only
+*.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp
