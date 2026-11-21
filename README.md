@@ -1,144 +1,180 @@
-# Lead Automation – Google Apps Script
+<div align="center">
 
-> **Built for:** Interview Demo · Domain 1: Lead Automation  
-> **Stack:** Google Apps Script · Google Forms · Google Sheets · Gmail · Gemini AI  
-> **Size:** 1 file · ~120 lines · Zero external dependencies
+# 🤖 Lead Automation — Google Apps Script + Gemini AI
+
+**Automatically respond to every new lead with a personalised AI-generated email — in under 10 seconds.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Google%20Apps%20Script-brightgreen)](https://script.google.com)
+[![AI Model](https://img.shields.io/badge/AI-Gemini%203.5%20Flash-orange)](https://ai.google.dev)
+[![Size](https://img.shields.io/badge/Codebase-1%20file%20%7C%20~120%20lines-lightgrey)]()
+
+</div>
 
 ---
 
-## What It Does
+## Overview
 
-Most businesses lose leads simply by responding too slowly. Studies show leads contacted within **5 minutes** are **9× more likely to convert** than those followed up after 30 minutes. Manual replies at that speed are impossible for a small team.
+Businesses that respond to leads within **5 minutes** are [**9× more likely to convert**](https://hbr.org/2011/03/the-short-life-of-online-sales-leads) them compared to a 30-minute response time. Manual follow-up at that speed is impossible for most teams.
 
-This project solves that with a fully automated pipeline:
+This project automates the entire lead-response pipeline using **Google Apps Script**, **Gemini AI**, and **Gmail** — with zero external dependencies, no servers, and no recurring cost.
+
+> A new form submission triggers an AI-generated personalised email reply to the lead and logs the interaction in a Google Sheet — fully automatically.
+
+---
+
+## How It Works
 
 ```
-Lead fills Google Form
-        │
-        ▼
-Apps Script trigger fires instantly
-        │
-        ├── Gemini AI writes a warm, personalised email (< 10 seconds)
-        │       └── References the lead's specific service, message & budget
-        │
-        ├── Gmail sends the email to the lead automatically
-        │
-        └── Google Sheet logs the AI reply, status & timestamp
+┌─────────────────────┐
+│   Google Form       │  ← Lead fills in Name, Email, Service, Budget, Message
+└────────┬────────────┘
+         │  on submit (trigger)
+         ▼
+┌─────────────────────┐
+│  Apps Script        │
+│  onFormSubmit()     │  ← Reads lead data from the form event
+└────────┬────────────┘
+         │
+         ├──────────────────────────────────────────┐
+         │                                          ▼
+         │                               ┌─────────────────────┐
+         │                               │   Gemini AI API     │
+         │                               │  gemini-3.5-flash   │  ← Generates personalised email
+         │                               └──────────┬──────────┘
+         │                                          │
+         ◄──────────────────────────────────────────┘
+         │
+         ├──► GmailApp.sendEmail()       ← Sends reply to the lead
+         │
+         └──► Google Sheet              ← Logs AI reply, status & timestamp
 ```
-
-**Result:** Every new lead gets a personalised, on-brand reply in under 10 seconds — at zero marginal cost per lead.
 
 ---
 
 ## Features
 
-- 📋 **Google Form** — 5-field lead capture form (Name, Email, Service, Budget, Message), created programmatically
-- 🤖 **Gemini AI** (`gemini-3.5-flash`) — generates a unique, personalised email for each lead referencing their specific enquiry
-- 📧 **Auto email** — sent via Gmail the moment the form is submitted
-- 📊 **Google Sheet logging** — every lead logged with AI reply, `Email sent` status, and timestamp
-- 🛡️ **Error-safe** — `try/catch` on every step; failures written to the Sheet so no lead is ever silently lost
-- 🔑 **Secure** — API key stored in Script Properties, never in code
-- 🧪 **`testRun()` function** — demo without filling the form
+| Feature | Detail |
+|---|---|
+| 📋 **Lead Capture Form** | 5-field Google Form created programmatically via `FormApp` |
+| 🤖 **AI-Generated Replies** | Gemini AI writes a warm, personalised email under 120 words |
+| 📧 **Automatic Email** | Sent via `GmailApp` the moment the form is submitted |
+| 📊 **Google Sheet Logging** | Every lead logged with AI reply, status, and timestamp |
+| 🛡️ **Error Handling** | `try/catch` on every step — failures written to Sheet, no silent loss |
+| 🔑 **Secure by Design** | API key stored in Script Properties, never in source code |
+| 🧪 **Test Mode** | `testRun()` simulates a submission for demos without touching the live form |
+| ⚡ **Zero Dependencies** | No external libraries, no frameworks, no servers — runs entirely on Google infrastructure |
 
 ---
 
-A single-file Apps Script project that:
-- Presents a **Google Form** to capture leads
-- Calls the **Gemini API** to generate a personalised reply
-- **Emails** the lead automatically
-- **Logs** everything in a linked Google Sheet
+## Tech Stack
+
+- **[Google Apps Script](https://script.google.com)** — Serverless runtime & orchestration
+- **[Google Forms](https://forms.google.com)** — Lead capture UI
+- **[Google Sheets](https://sheets.google.com)** — Persistent data log
+- **[Gmail](https://mail.google.com)** — Email delivery
+- **[Gemini API](https://ai.google.dev)** (`gemini-3.5-flash`) — AI text generation via REST
 
 ---
 
-## 5-Step Setup
+## Project Structure
 
-### 1 · Create the Apps Script project
-1. Go to [script.google.com](https://script.google.com) and click **New project**.
-2. Rename it to something like `Lead Automation`.
-3. Delete the default `myFunction` placeholder.
+```
+lead-automation-apps-script/
+├── Code.gs        # Entire project — 4 functions, ~120 lines
+├── README.md      # This file
+├── note.md        # Tools, architecture, domain rationale & 30-day plan
+└── .gitignore
+```
 
-### 2 · Paste the code
-1. Open `Code.gs` in this repo.
-2. Copy the entire file contents.
-3. Paste it into the `Code.gs` editor tab in Apps Script.
-4. Update the three constants at the top to match your company:
-   ```js
-   const MODEL        = "gemini-2.5-flash";   // Gemini model to use
-   const COMPANY_NAME = "Your Company";        // Your business name
-   const CTA_LINK     = "https://calendly.com/yourname/15min"; // Your booking link
-   ```
-5. Click **Save** (Ctrl+S / ⌘S).
+**The 4 functions in `Code.gs`:**
 
-### 3 · Add your Gemini API key
-1. In the Apps Script editor, click **Project Settings** (gear icon, left sidebar).
-2. Scroll to **Script Properties** → click **Add script property**.
-3. Property name: `GEMINI_KEY` | Value: your Gemini API key.
-4. Click **Save script properties**.
-
-> Get a free API key at [aistudio.google.com](https://aistudio.google.com) → **Get API key**.
-
-### 4 · Run `setup()` and approve permissions
-1. In the editor toolbar, select the function **`setup`** from the dropdown.
-2. Click **▶ Run**.
-3. Google will ask for permissions — click **Review permissions → Allow**.
-4. Open the **Execution log** (bottom panel) — you will see the Form URL, Edit URL, and Sheet URL printed there. Open them to confirm everything was created.
-
-### 5 · Run `testRun()` and verify
-1. Select **`testRun`** from the function dropdown and click **▶ Run**.
-2. Check your inbox — you should receive a personalised email within seconds.
-3. Open the linked Google Sheet — you should see the lead row with the AI reply, status `Email sent`, and a timestamp.
+| Function | Purpose |
+|---|---|
+| `setup()` | Run once — creates Form, Sheet, columns, and trigger |
+| `onFormSubmit(e)` | Event handler — orchestrates the full pipeline on each submission |
+| `generateReply()` | Calls Gemini API and returns the personalised email body |
+| `testRun()` | Simulates a submission for local testing and demos |
 
 ---
 
-## 3-Minute Demo Script
+## Getting Started
 
-> *Use this word-for-word during your interview presentation.*
+### Prerequisites
+
+- A Google account
+- A free [Gemini API key](https://aistudio.google.com/apikey) from Google AI Studio
+
+### Setup (5 Steps)
+
+**1. Create the Apps Script project**
+
+Go to [script.google.com](https://script.google.com) → click **New project** → rename it to `Lead Automation`.
+
+**2. Paste the code**
+
+Delete the default content in `Code.gs`, paste in the contents of [`Code.gs`](Code.gs) from this repo, and update the three constants at the top:
+
+```js
+const MODEL        = "gemini-3.5-flash";          // Gemini model
+const COMPANY_NAME = "Your Company";              // Your business name
+const CTA_LINK     = "https://calendly.com/you";  // Your booking link
+```
+
+Press `Ctrl+S` to save.
+
+**3. Add your Gemini API key**
+
+In the Apps Script editor → **⚙️ Project Settings** → **Script Properties** → **Add script property**:
+
+| Property | Value |
+|---|---|
+| `GEMINI_KEY` | `your-api-key-here` |
+
+**4. Run `setup()`**
+
+Select `setup` from the function dropdown → click **▶ Run** → approve permissions when prompted.
+
+The execution log will print your Form URL, Edit URL, and Sheet URL.
+
+**5. Test with `testRun()`**
+
+Select `testRun` → click **▶ Run**. Check your inbox — a personalised AI email should arrive within seconds. The Sheet will also log the entry automatically.
 
 ---
 
-**[0:00 – 0:20] Open with the problem**
+## Configuration
 
-> "Every business gets enquiries through a contact form. The challenge is responding fast and personally when you have dozens of leads. This project automates that entire flow with about 100 lines of Google Apps Script."
+All configurable values are grouped at the top of `Code.gs`:
 
----
+```js
+const MODEL        = "gemini-3.5-flash";
+const COMPANY_NAME = "Your Company";
+const CTA_LINK     = "https://calendly.com/yourname/15min";
+```
 
-**[0:20 – 0:50] Walk through the code (Code.gs open in editor)**
-
-> "There are four functions. At the top, three config constants — the AI model, our company name, and our booking link. That's the only place you ever need to edit.
-
-> `setup()` runs once: it creates the form with five fields, links it to a Sheet, adds three custom columns, and creates the trigger that fires on every submission.
-
-> `generateReply()` talks to the Gemini API — the API key is stored in Script Properties, never in the code. It sends a structured prompt and returns just the email body.
-
-> `onFormSubmit()` orchestrates everything: it reads the lead's answers, calls `generateReply`, sends the email via Gmail, and writes the AI reply plus status back into the Sheet. Everything is wrapped in try/catch so if anything fails, the error is written to the Sheet — no lead is ever silently lost.
-
-> `testRun()` simulates a submission with fake data so I can demo without touching the live form."
+The API key is **never** stored in code — it is read at runtime from Script Properties via:
+```js
+PropertiesService.getScriptProperties().getProperty("GEMINI_KEY");
+```
 
 ---
 
-**[0:50 – 1:30] Live demo**
+## Security
 
-> "I already ran `setup()` — here's the form [open form URL], and here's the Sheet [open Sheet]. Now I'll run `testRun()`."
-
-*(Run `testRun()` → switch to inbox)*
-
-> "And the email is already here — personalised, mentions AI Automation, and gives a clear next step with the booking link."
-
-*(Switch to Sheet)*
-
-> "The Sheet logged the AI response, status, and timestamp automatically."
+- ✅ API key stored in Script Properties — not in source code
+- ✅ No hardcoded credentials anywhere in the codebase
+- ✅ `.gitignore` excludes any local `.env` files
+- ✅ Apps Script runs under your Google account with explicit OAuth scopes
 
 ---
 
-**[1:30 – 2:00] Wrap up**
+## License
 
-> "In production you'd share the form link on your website. Every new submission triggers this automatically — no manual follow-up needed. The whole thing is one file, zero external dependencies, and runs entirely on Google's free infrastructure."
+This project is licensed under the [MIT License](LICENSE) — feel free to use, modify, and distribute it.
 
 ---
 
-**[2:00 – 3:00] Q&A buffer**
-
-Common questions and answers:
-- *"What if the API call fails?"* → The catch block writes `Error: <message>` to the Status column. No lead is lost.
-- *"Can it handle multiple submissions at once?"* → Apps Script triggers are event-driven and run independently per submission.
-- *"How do you scale this?"* → For high volume, replace Gmail with SendGrid via UrlFetchApp, and add a column for lead scoring.
+<div align="center">
+  Built with ❤️ using Google Apps Script &amp; Gemini AI
+</div>
